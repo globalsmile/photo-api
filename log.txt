@@ -1,0 +1,14 @@
+ PASS  __tests__/photos.test.js
+  Photo API Integration Tests
+    ✓ GET /photos → default pagination (limit=10, page=1) (18 ms)
+    ✓ GET /photos?limit=5&page=2 → correct slicing (23 ms)
+    ✓ GET /photos?orderBy=title:asc → sorted ascending by title (23 ms)
+    ✓ GET /photos?orderBy=id:desc → sorted descending by id (11 ms)
+    ✓ GET /photos?page=9999 → out‐of‐range returns empty array (6 ms)
+    ✓ GET /nonexistent → 404 JSON response (2 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       6 passed, 6 total
+Snapshots:   0 total
+Time:        1.06 s, estimated 2 s
+Ran all test suites.

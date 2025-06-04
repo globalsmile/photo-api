@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Photo API Demo</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 2rem;
+    }
+    h1 {
+      margin-bottom: 1rem;
+    }
+    form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      align-items: flex-end;
+    }
+    label {
+      display: flex;
+      flex-direction: column;
+      font-size: 0.9rem;
+    }
+    input, select {
+      padding: 0.4rem 0.6rem;
+      font-size: 1rem;
+      margin-top: 0.25rem;
+    }
+    button {
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 0.5rem;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    img.thumbnail {
+      width: 50px;
+      height: 50px;
+      object-fit: cover;
+      border-radius: 4px;
+    }
+    .controls {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+  </style>
+</head>
+<body>
+  <h1>Photo API Demo</h1>
+
+  <form id="queryForm">
+    <div class="controls">
+      <label>
+        Limit
+        <input type="number" id="limitInput" min="1" value="10" />
+      </label>
+      <label>
+        Page
+        <input type="number" id="pageInput" min="1" value="1" />
+      </label>
+      <label>
+        Order By
+        <input type="text" id="orderByInput" placeholder="field:asc or field:desc" />
+      </label>
+      <button type="submit">Fetch Photos</button>
+    </div>
+  </form>
+
+  <div id="resultArea">
+    <!-- Table will be injected here -->
+  </div>
+
+  <script>
+    document.getElementById('queryForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const limit = document.getElementById('limitInput').value.trim();
+      const page = document.getElementById('pageInput').value.trim();
+      const orderBy = document.getElementById('orderByInput').value.trim();
+
+      // Build query string
+      const params = new URLSearchParams();
+      if (limit) params.set('limit', limit);
+      if (page) params.set('page', page);
+      if (orderBy) params.set('orderBy', orderBy);
+
+      const apiUrl = `/photos?${params.toString()}`;
+
+      try {
+        const resp = await fetch(apiUrl);
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const json = await resp.json();
+
+        renderTable(json.data.photos, json.data.page, json.data.limit, json.data.total);
+      } catch (err) {
+        document.getElementById('resultArea').innerHTML =
+          `<p style="color: red;">Error fetching: ${err.message}</p>`;
+      }
+    });
+
+    function renderTable(photos, page, limit, total) {
+      if (!Array.isArray(photos)) {
+        document.getElementById('resultArea').innerHTML =
+          `<p>No data returned.</p>`;
+        return;
+      }
+
+      let html = `
+        <p>Showing page <strong>${page}</strong> (limit: ${limit}), total items: ${total}</p>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Title</th>
+              <th>Thumbnail</th>
+              <th>URL</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      for (const photo of photos) {
+        html += `
+          <tr>
+            <td>${photo.id}</td>
+            <td>${photo.title}</td>
+            <td><img class="thumbnail" src="${photo.thumbnailUrl}" alt="Thumb ${photo.id}" /></td>
+            <td><a href="${photo.url}" target="_blank">View Full</a></td>
+          </tr>`;
+      }
+
+      html += `
+          </tbody>
+        </table>
+      `;
+
+      document.getElementById('resultArea').innerHTML = html;
+    }
+  </script>
+</body>
+</html>
